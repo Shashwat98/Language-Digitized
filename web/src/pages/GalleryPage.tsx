@@ -1,19 +1,20 @@
 import { Link, useNavigate } from "react-router-dom";
 import { nanoid } from "nanoid";
+import { useEffect } from "react";
+import { useInscriptionStore } from "../state/useInscriptionStore";
 
 export default function GalleryPage() {
   const navigate = useNavigate();
+  const { inscriptions, list, loading } = useInscriptionStore();
+
+  useEffect(() => {
+    list();
+  }, [list]);
 
   const onNew = () => {
     const id = nanoid();
     navigate(`/inscription/${id}`);
   };
-
-  // Placeholder static grid (Dexie integration later)
-  const mock = Array.from({ length: 12 }).map((_, i) => ({
-    id: `mock-${i}`,
-    createdAt: Date.now() - i * 1000,
-  }));
 
   return (
     <div className="min-h-dvh px-4 py-6">
@@ -27,15 +28,25 @@ export default function GalleryPage() {
         </button>
       </header>
 
+      {loading && <div className="text-sm opacity-60">Loading…</div>}
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-        {mock.map((item) => (
+        {inscriptions.map((item) => (
           <Link
             key={item.id}
             to={`/inscription/${item.id}`}
             className="aspect-square rounded-xl border flex items-center justify-center text-xs hover:shadow-sm"
-            title="Open inscription"
+            title={item.title || "Open inscription"}
           >
-            <span className="opacity-60">Thumbnail</span>
+            {item.thumbPng ? (
+              <img
+                src={URL.createObjectURL(item.thumbPng)}
+                alt={item.title || "Thumbnail"}
+                className="w-full h-full object-cover rounded-xl"
+              />
+            ) : (
+              <span className="opacity-60">No thumbnail</span>
+            )}
           </Link>
         ))}
       </div>
